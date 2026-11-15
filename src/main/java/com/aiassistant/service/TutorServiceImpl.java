@@ -20,13 +20,6 @@ public class TutorServiceImpl implements TutorService {
 
         String response = chatClient.prompt()
                 .user(aiRequest.question())
-                .options(
-                        //ChatOptions chat client ko jitni baar call karo utni baar same behaviour chahie to ye use karenge
-                        ChatOptions.builder()
-                                .model("openai/gpt-oss-120b")
-                                .temperature(0.3)
-                                .maxTokens(1000)
-                )
                 .system("Act as 10 years experience java teacher")
                 .call()
                 .content();
