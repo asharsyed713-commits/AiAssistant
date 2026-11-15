@@ -4,17 +4,13 @@ import com.aiassistant.dto.AiRequest;
 import com.aiassistant.dto.AiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TutorServiceImpl implements TutorService {
    
-    private ChatClient chatClient;
-
-    public TutorServiceImpl(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
-    }
+    private final ChatClient chatClient;
 
     @Override
     public AiResponse askFromAi(AiRequest aiRequest) {
