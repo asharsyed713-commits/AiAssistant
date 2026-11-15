@@ -3,20 +3,27 @@ package com.aiassistant.service;
 import com.aiassistant.dto.AiRequest;
 import com.aiassistant.dto.AiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class TutorServiceImpl implements TutorService {
    
-    private final ChatModel chatModel;
+    private ChatClient chatClient;
+
+    public TutorServiceImpl(ChatClient.Builder builder) {
+        this.chatClient = builder.build();
+    }
 
     @Override
     public AiResponse askFromAi(AiRequest aiRequest) {
-//        System.out.println("Ask from AI");
-        String response = chatModel.call(aiRequest.question());
-        System.out.println("Response "+response);
+        String response = chatClient.prompt()
+                .user(aiRequest.question())
+                .system("Act as 10 years experience java teacher")
+                .call()
+                .content();
+        System.out.println("Response: " + response);
         AiResponse aiResponse = new AiResponse(response);
         return aiResponse;
     }
