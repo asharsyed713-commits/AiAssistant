@@ -28,24 +28,14 @@ public class TutorServiceImpl implements TutorService {
         String level = aiRequest.level();
         String language = aiRequest.language();
 
-        //Added prompt template
-        PromptTemplate template = PromptTemplate.builder()
-                .renderer(StTemplateRenderer.builder()
-                        .startDelimiterToken('<')
-                        .endDelimiterToken('>')
-                        .build())
-                .resource(queryResource)
-                .variables(Map.of(
-                        "topic",topic,
-                        "level",level,
-                        "language",language
-                )).build();
 
-
-        String prompt = template.render();
-
+       //Templating using chatClient
         String response = chatClient.prompt()
-                .user(prompt)
+                .user(user->user
+                        .text(queryResource)
+                        .param("topic",topic)
+                        .param("level",level)
+                        .param("language",language))
                 .call()
                 .content();
         System.out.println("Response: " + response);
