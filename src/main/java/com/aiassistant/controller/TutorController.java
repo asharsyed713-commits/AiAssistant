@@ -19,7 +19,7 @@ public class TutorController {
     private final TutorService tutorService;
 
     @PostMapping("/ask")
-    public ResponseEntity<AiResponse> askFromAi(@RequestBody @Valid AiRequest aiRequest){
-       return ResponseEntity.ok(tutorService.askFromAi(aiRequest));
+    public ResponseEntity<AiResponse> askFromAi(@RequestBody @Valid AiRequest aiRequest) {
+        return ResponseEntity.ok(tutorService.askFromAi(aiRequest));
     }
 }
