@@ -7,6 +7,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -96,8 +97,8 @@ public class TutorServiceImpl implements TutorService {
 
     //Streaming Response
     @Override
-    public Flux<String> streamFromAi(AiRequest aiRequest) {
-        Flux<String> content = chatClient.prompt()
+    public Flux<ServerSentEvent<AiStreamEvent>> streamFromAi(AiRequest aiRequest) {
+      return chatClient.prompt()
                 .options(
                         ChatOptions.builder()
                                 .temperature(0.3)
@@ -110,17 +111,29 @@ public class TutorServiceImpl implements TutorService {
                                 .param("language", aiRequest.language()))
                 .stream()
                 .content()
-                .doOnNext(chunk->{
-                        log.info("Chunk is {}",chunk);
+                .map(chunk->
+                        ServerSentEvent.builder(
+                                new AiStreamEvent("CONTENT",chunk))
+                                .event("content").build()
+                )
+                .concatWith(Mono.just(
+                        ServerSentEvent.builder(
+                                new AiStreamEvent("DONE",null)
+                                )
+                                .event("done")
+                                .build()
+                ))
+                .onErrorResume(error->{
+                    log.error("Error ",error);
+                    return Mono.just(ServerSentEvent.builder(
+                            new AiStreamEvent("ERROR","Unable to generate response"))
+                            .event("error")
+                            .build());
+
                 })
-                .doOnError(error->{
-                        log.error("Error while processing request",error);
-                })
-                .doOnComplete(()->{
-                    log.info("Finished");
-                })
-                .concatWith(Mono.just("[DONE]"))
-                .onErrorResume(error-> Flux.just("[ERROR]"));
-        return content;
+                .doFinally(signal->
+                        log.info("Stream terminated with {}",signal));
+
+
     }
 }

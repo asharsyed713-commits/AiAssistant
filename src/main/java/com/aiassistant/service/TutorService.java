@@ -1,14 +1,8 @@
 package com.aiassistant.service;
 
-import com.aiassistant.dto.AiRequest;
-import com.aiassistant.dto.AiResponse;
-import com.aiassistant.dto.StudyPlan;
-import com.aiassistant.dto.StudyPlanRequest;
-import com.aiassistant.dto.Quiz;
-import com.aiassistant.dto.QuizRequest;
-import com.aiassistant.dto.AnswerEvaluation;
-import com.aiassistant.dto.AnswerValidRequest;
+import com.aiassistant.dto.*;
 import jakarta.validation.Valid;
+import org.springframework.http.codec.ServerSentEvent;
 import reactor.core.publisher.Flux;
 
 public interface TutorService {
@@ -21,5 +15,5 @@ public interface TutorService {
 
     AnswerEvaluation evaluateAnswer(AnswerValidRequest request);
 
-    Flux<String> streamFromAi(@Valid AiRequest aiRequest);
+    Flux<ServerSentEvent<AiStreamEvent>> streamFromAi(@Valid AiRequest aiRequest);
 }
