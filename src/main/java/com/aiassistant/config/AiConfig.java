@@ -22,7 +22,7 @@ public class AiConfig {
                         ChatOptions.builder()
                                 .model("openai/gpt-oss-120b")
                                 .temperature(0.3)
-                                .maxTokens(1000)
+//                                .maxTokens(1000)
                 )
         .build();
     }

@@ -2,6 +2,8 @@ package com.aiassistant.controller;
 
 import com.aiassistant.dto.AiRequest;
 import com.aiassistant.dto.AiResponse;
+import com.aiassistant.dto.StudyPlan;
+import com.aiassistant.dto.StudyPlanRequest;
 import com.aiassistant.service.TutorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +23,11 @@ public class TutorController {
     @PostMapping("/ask")
     public ResponseEntity<AiResponse> askFromAi(@RequestBody @Valid AiRequest aiRequest) {
         return ResponseEntity.ok(tutorService.askFromAi(aiRequest));
+    }
+
+    @PostMapping("/study-plan")
+    public ResponseEntity<StudyPlan> studyPlan(@RequestBody @Valid StudyPlanRequest request) {
+       StudyPlan studyPlan =  tutorService.prepareStudyPlan(request);
+       return ResponseEntity.ok(studyPlan);
     }
 }
