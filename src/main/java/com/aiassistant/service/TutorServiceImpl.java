@@ -1,19 +1,13 @@
 package com.aiassistant.service;
 
-import com.aiassistant.dto.AiRequest;
-import com.aiassistant.dto.AiResponse;
-import com.aiassistant.dto.StudyPlan;
-import com.aiassistant.dto.StudyPlanRequest;
+import com.aiassistant.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
+import reactor.core.publisher.Flux;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +18,12 @@ public class TutorServiceImpl implements TutorService {
 
     @Value("classpath:/prompts/study-prompt.st")
     private Resource studyPlanPrompt;
+
+    @Value("classpath:/prompts/quiz-prompt.st")
+    private Resource quizPrompt;
+
+    @Value("classpath:/prompts/answer-evaluation-prompt.st")
+    private Resource answerEvaluationPrompt;
    
     private final ChatClient chatClient;
 
@@ -62,5 +62,51 @@ public class TutorServiceImpl implements TutorService {
                 .call()
                 .entity(StudyPlan.class);
         return entity;
+    }
+
+    public Quiz generateQuiz(QuizRequest request){
+        return chatClient.prompt()
+                .user(user->
+                        user.text(quizPrompt)
+                                .param("topic",request.topic())
+                                .param("level",request.level())
+                                .param("numberOfQuestions",request.numberOfQuestions()))
+                .call()
+                .entity(Quiz.class);
+    }
+
+    public AnswerEvaluation evaluateAnswer(AnswerValidRequest request){
+        return chatClient.prompt()
+                .options(
+                        ChatOptions.builder()
+                                .temperature(0.0)
+                )
+                .user(user-> user
+                        .text(answerEvaluationPrompt)
+                        .param("question",request.question())
+                                .param("studentAnswer",request.studentAnswer())
+                        .param("level",request.level())
+                        )
+                .call()
+                .entity(AnswerEvaluation.class);
+    }
+
+    //Streaming Response
+    @Override
+    public Flux<String> streamFromAi(AiRequest aiRequest) {
+        Flux<String> content = chatClient.prompt()
+                .options(
+                        ChatOptions.builder()
+                                .temperature(0.3)
+                                .maxTokens(1000)
+                )
+                .user(user ->
+                        user.text(queryResource)
+                                .param("topic", aiRequest.topic())
+                                .param("level", aiRequest.level())
+                                .param("language", aiRequest.language()))
+                .stream()
+                .content();
+        return content;
     }
 }
