@@ -2,13 +2,16 @@ package com.aiassistant.service;
 
 import com.aiassistant.dto.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TutorServiceImpl implements TutorService {
@@ -106,7 +109,18 @@ public class TutorServiceImpl implements TutorService {
                                 .param("level", aiRequest.level())
                                 .param("language", aiRequest.language()))
                 .stream()
-                .content();
+                .content()
+                .doOnNext(chunk->{
+                        log.info("Chunk is {}",chunk);
+                })
+                .doOnError(error->{
+                        log.error("Error while processing request",error);
+                })
+                .doOnComplete(()->{
+                    log.info("Finished");
+                })
+                .concatWith(Mono.just("[DONE]"))
+                .onErrorResume(error-> Flux.just("[ERROR]"));
         return content;
     }
 }
