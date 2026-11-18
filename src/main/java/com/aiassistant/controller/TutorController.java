@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -18,7 +19,7 @@ public class TutorController {
 
     //Streaming Response
     @PostMapping(value = "/ask/stream",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> streamAskAi(@RequestBody @Valid AiRequest aiRequest) {
+    public Flux<ServerSentEvent<AiStreamEvent>> streamAskAi(@RequestBody @Valid AiRequest aiRequest) {
         return tutorService.streamFromAi(aiRequest);
     }
 

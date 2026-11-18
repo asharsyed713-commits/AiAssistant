@@ -15,5 +15,5 @@ public interface TutorService {
 
     AnswerEvaluation evaluateAnswer(AnswerValidRequest request);
 
-    Flux<ServerSentEvent<AiStreamEvent>> streamFromAi(@Valid AiRequest aiRequest);
+    Flux<ServerSentEvent<AiStreamEvent>> streamFromAi(AiRequest aiRequest);
 }
