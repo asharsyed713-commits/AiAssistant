@@ -51,7 +51,7 @@ public class TutorServiceImpl implements TutorService {
                         .param("language",language))
                 .call()
                 .content();
-        System.out.println("Response: " + response);
+       System.out.println("Response: " + response);
         AiResponse aiResponse = new AiResponse(response);
         return aiResponse;
     }

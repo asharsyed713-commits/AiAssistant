@@ -1,5 +1,6 @@
 package com.aiassistant.config;
 
+import com.aiassistant.advisor.CustomAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -16,11 +17,11 @@ public class AiConfig {
 
     //Added defaultSystem
     @Bean
-    public ChatClient chatClient(ChatClient.Builder builder){
+    public ChatClient chatClient(ChatClient.Builder builder,CustomAdvisor customAdvisor) {
         return builder
                 .defaultSystem(systemPrompt)
                 .defaultAdvisors(
-                        SimpleLoggerAdvisor.builder().build()
+                        customAdvisor
                 )
                 .defaultOptions(
                         ChatOptions.builder()
