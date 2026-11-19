@@ -2,7 +2,8 @@ package com.aiassistant.config;
 
 import com.aiassistant.advisor.CustomAdvisor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +18,12 @@ public class AiConfig {
 
     //Added defaultSystem
     @Bean
-    public ChatClient chatClient(ChatClient.Builder builder,CustomAdvisor customAdvisor) {
+    public ChatClient chatClient(ChatClient.Builder builder, CustomAdvisor customAdvisor, ChatMemory chatMemory) {
         return builder
                 .defaultSystem(systemPrompt)
                 .defaultAdvisors(
-                        customAdvisor
+                        customAdvisor,
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )
                 .defaultOptions(
                         ChatOptions.builder()

@@ -10,6 +10,8 @@ public record AiRequest(
         @NotBlank(message = "Level is required")
         String level,
         @NotBlank(message = "Language is required")
-        String language
+        String language,
+        @NotBlank
+        String conversationId
 ) {
 }

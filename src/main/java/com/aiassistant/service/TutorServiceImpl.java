@@ -4,13 +4,17 @@ import com.aiassistant.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -41,8 +45,16 @@ public class TutorServiceImpl implements TutorService {
 
        //Templating using chatClient
         String response = chatClient.prompt()
+                .advisors(advisor->
+                        advisor.param(ChatMemory.CONVERSATION_ID,aiRequest.conversationId()))
                 .options(
-                        ChatOptions.builder().maxTokens(1000)
+                        OpenAiChatOptions.builder()
+                                .model("openai/gpt-oss-120b")
+                                .temperature(0.6)
+                                .maxCompletionTokens(2048)
+                                .extraBody(Map.of("include_reasoning", false))
+                                .replayReasoningContent(false)
+
                 )
                 .user(user->user
                         .text(queryResource)
@@ -51,9 +63,15 @@ public class TutorServiceImpl implements TutorService {
                         .param("language",language))
                 .call()
                 .content();
-       System.out.println("Response: " + response);
-        AiResponse aiResponse = new AiResponse(response);
-        return aiResponse;
+        log.info("Groq response: {}", response);
+
+        if (response == null || response.isBlank()) {
+            throw new IllegalStateException(
+                    "Groq returned an empty response"
+            );
+        }
+
+        return new AiResponse(response);
     }
 
     @Override
@@ -99,10 +117,16 @@ public class TutorServiceImpl implements TutorService {
     @Override
     public Flux<ServerSentEvent<AiStreamEvent>> streamFromAi(AiRequest aiRequest) {
       return chatClient.prompt()
+              .advisors(advisor->
+                      advisor.param(ChatMemory.CONVERSATION_ID,aiRequest.conversationId()))
                 .options(
-                        ChatOptions.builder()
+                        OpenAiChatOptions.builder()
+                                .model("openai/gpt-oss-120b")
                                 .temperature(0.3)
-                                .maxTokens(1000)
+                                .maxCompletionTokens(2048)
+                                .extraBody(Map.of("include_reasoning", false))
+                                .replayReasoningContent(false)
+
                 )
                 .user(user ->
                         user.text(queryResource)
